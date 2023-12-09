@@ -152,15 +152,16 @@ func main() {
 	}
 	
 	if !needs_update {
-		os.WriteFile(GITHUB_OUTPUT, []byte("NEEDS_UPDATE=false"), os.ModeAppend)
+		os.WriteFile(GITHUB_OUTPUT, []byte("NEEDS_UPDATE=false"), 0666)
 		log.Println("NEEDS_UPDATE: false")
 		return
 	}
 
-	os.WriteFile(GITHUB_OUTPUT, []byte("NEEDS_UPDATE=true\n"), os.ModeAppend)
-	os.WriteFile(GITHUB_OUTPUT, []byte("VERSION_NAME=" + VERSION_NAME + "\n"), os.ModeAppend)
-	os.WriteFile(GITHUB_OUTPUT, []byte("BUILD_ID=" + BUILD_ID + "\n"), os.ModeAppend)
-	os.WriteFile(GITHUB_OUTPUT, []byte("DOWNLOAD_NAME=" + DOWNLOAD_NAME + "\n"), os.ModeAppend)
+	output_body := fmt.Sprintf(
+		"NEEDS_UPDATE=true\nVERSION_NAME=%s\nBUILD_ID=%s\nDOWNLOAD_NAME=%s\n",
+		VERSION_NAME, BUILD_ID, DOWNLOAD_NAME)	
+
+	os.WriteFile(GITHUB_OUTPUT, []byte(output_body), 0666)
 	log.Println("NEEDS_UPDATE: true")
 		
 	new_data := map[string]map[string]string {}
