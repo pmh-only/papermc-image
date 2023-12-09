@@ -164,7 +164,7 @@ func main() {
 	os.WriteFile(GITHUB_OUTPUT, []byte(output_body), 0666)
 	log.Println("NEEDS_UPDATE: true")
 		
-	new_data := map[string]map[string]string {}
+	new_data := previous_data.(map[string]map[string]string)
 	new_data[PROJECT_NAME] = map[string]string{}
 	new_data[PROJECT_NAME]["VERSION_NAME"] = VERSION_NAME
 	new_data[PROJECT_NAME]["BUILD_ID"] = BUILD_ID
