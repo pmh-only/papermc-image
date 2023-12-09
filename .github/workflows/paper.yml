@@ -42,12 +42,13 @@ jobs:
         if: steps.fetch.outputs.NEEDS_UPDATE == 'true'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          message: 'chore(${{ env.PROJECT_NAME }}): update previous_args.json `${date}`'
+          message: 'chore(${{ env.PROJECT_NAME }}): update previous_args.json `${{ steps.fetch.outputs.DOWNLOAD_NAME }}`'
 
   build:
     name: Build image
     runs-on: ubuntu-latest
     needs: check
+    if: needs.check.outputs.NEEDS_UPDATE == 'true'
     steps:
       - uses: actions/checkout@v4
         name: Checkout files
