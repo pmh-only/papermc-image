@@ -157,10 +157,10 @@ func main() {
 		return
 	}
 
-	os.WriteFile(GITHUB_OUTPUT, []byte("NEEDS_UPDATE=true"), os.ModeAppend)
-	os.WriteFile(GITHUB_OUTPUT, []byte("VERSION_NAME=" + VERSION_NAME), os.ModeAppend)
-	os.WriteFile(GITHUB_OUTPUT, []byte("BUILD_ID=" + BUILD_ID), os.ModeAppend)
-	os.WriteFile(GITHUB_OUTPUT, []byte("DOWNLOAD_NAME=" + DOWNLOAD_NAME), os.ModeAppend)
+	os.WriteFile(GITHUB_OUTPUT, []byte("NEEDS_UPDATE=true\n"), os.ModeAppend)
+	os.WriteFile(GITHUB_OUTPUT, []byte("VERSION_NAME=" + VERSION_NAME + "\n"), os.ModeAppend)
+	os.WriteFile(GITHUB_OUTPUT, []byte("BUILD_ID=" + BUILD_ID + "\n"), os.ModeAppend)
+	os.WriteFile(GITHUB_OUTPUT, []byte("DOWNLOAD_NAME=" + DOWNLOAD_NAME + "\n"), os.ModeAppend)
 	log.Println("NEEDS_UPDATE: true")
 		
 	new_data := map[string]map[string]string {}
