@@ -80,5 +80,9 @@ jobs:
             ghcr.io/pmh-only/${{ env.PROJECT_NAME }}:latest
             ghcr.io/pmh-only/${{ env.PROJECT_NAME }}:${{ needs.check.outputs.VERSION_NAME }}
             ghcr.io/pmh-only/${{ env.PROJECT_NAME }}:${{ needs.check.outputs.VERSION_NAME }}-${{ needs.check.outputs.BUILD_ID }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/pmh-only/papermc-image
+            org.opencontainers.image.description=Container image for PaperMC: ${{ env.PROJECT_NAME }} (${{ needs.check.outputs.DOWNLOAD_NAME }})
+            org.opencontainers.image.licenses=MIT
           cache-from: type=gha
           cache-to: type=gha,mode=max
