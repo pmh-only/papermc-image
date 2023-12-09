@@ -3,7 +3,7 @@ name: 'Check updates and build: Velocity Proxy'
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '30 * * * *'
 
 permissions:
   contents: write
