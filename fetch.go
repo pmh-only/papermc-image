@@ -121,13 +121,14 @@ func main() {
 	log.Printf("Readen data: %s", body)
 	log.Println("Calculating NEEDS_UPDATE")
 
-	if err := json.Unmarshal(body, &data); err != nil {
+	var file map[string]interface{}
+	if err := json.Unmarshal(body, &file); err != nil {
 		log.Fatalf("Version history file, previous_args.json is corrupted")
 	}
 
 	needs_update := false
 	
-	previous_data := data[PROJECT_NAME]
+	previous_data := file[PROJECT_NAME]
 	if previous_data == nil {
 		needs_update = true
 	}
@@ -164,7 +165,7 @@ func main() {
 	os.WriteFile(GITHUB_OUTPUT, []byte(output_body), 0666)
 	log.Println("NEEDS_UPDATE: true")
 		
-	new_data := data
+	new_data := file
 	new_data[PROJECT_NAME] = map[string]string{}
 	new_data[PROJECT_NAME].(map[string]string)["VERSION_NAME"] = VERSION_NAME
 	new_data[PROJECT_NAME].(map[string]string)["BUILD_ID"] = BUILD_ID
