@@ -7,4 +7,4 @@ if [[ -z "$DISABLE_TUNING" ]]; then
   TUNING_FLAG=""
 fi
 
-java $* $TUNING_FLAG -jar /bin/server.jar --nogui
+java $* $TUNING_FLAG -jar /bin/server.jar
