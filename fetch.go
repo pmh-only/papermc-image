@@ -46,13 +46,13 @@ func main() {
 	var data map[string]interface{}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("PaperMC API returns an ambiguous data")
+		log.Fatalln("PaperMC API returns an ambiguous data")
 	}
 
 	log.Printf("Response: %s", body)
 
 	if err := json.Unmarshal(body, &data); err != nil {
-		log.Fatalf("PaperMC API returns an ambiguous data")
+		log.Fatalln("PaperMC API returns an ambiguous data")
 	}
 
 	versions := data["versions"].([]interface{})
@@ -69,13 +69,13 @@ func main() {
 
 	body, err = io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("PaperMC API returns an ambiguous data")
+		log.Fatalln("PaperMC API returns an ambiguous data")
 	}
 
 	log.Printf("Response: %s", body)
 
 	if err := json.Unmarshal(body, &data); err != nil {
-		log.Fatalf("PaperMC API returns an ambiguous data")
+		log.Fatalln("PaperMC API returns an ambiguous data")
 	}
 
 	builds := data["builds"].([]interface{})
@@ -91,13 +91,21 @@ func main() {
 
 	body, err = io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("PaperMC API returns an ambiguous data")
+		log.Fatalln("PaperMC API returns an ambiguous data")
 	}
 
-	log.Printf("Response: %s", body)
+	log.Printf("Response: %s\n", body)
 
 	if err := json.Unmarshal(body, &data); err != nil {
-		log.Fatalf("PaperMC API returns an ambiguous data")
+		log.Fatalln("PaperMC API returns an ambiguous data")
+	}
+
+	build_channel := data["channel"].(string)
+	is_experimental_build := "false"
+
+	if build_channel == "experimental" {
+		log.Println("Experimental build detected")
+		is_experimental_build = "true"
 	}
 
 	downloads := data["downloads"].(map[string]interface{})
@@ -115,15 +123,15 @@ func main() {
 
 	body, err = os.ReadFile("previous_args.json")
 	if err != nil {
-		log.Fatalf("Version history file, previous_args.json is not readable: %s", err.Error())
+		log.Fatalf("Version history file, previous_args.json is not readable: %s\n", err.Error())
 	}
 
-	log.Printf("Readen data: %s", body)
+	log.Printf("Previous args: %s", body)
 	log.Println("Calculating NEEDS_UPDATE")
 
 	var file map[string]interface{}
 	if err := json.Unmarshal(body, &file); err != nil {
-		log.Fatalf("Version history file, previous_args.json is corrupted")
+		log.Fatalln("Version history file, previous_args.json is corrupted")
 	}
 
 	needs_update := false
@@ -159,8 +167,8 @@ func main() {
 	}
 
 	output_body := fmt.Sprintf(
-		"NEEDS_UPDATE=true\nVERSION_NAME=%s\nBUILD_ID=%s\nDOWNLOAD_NAME=%s\n",
-		VERSION_NAME, BUILD_ID, DOWNLOAD_NAME)	
+		"NEEDS_UPDATE=true\nVERSION_NAME=%s\nBUILD_ID=%s\nDOWNLOAD_NAME=%s\nIS_EXPERIMENTAL_BUILD=%s\n",
+		VERSION_NAME, BUILD_ID, DOWNLOAD_NAME, is_experimental_build)
 
 	os.WriteFile(GITHUB_OUTPUT, []byte(output_body), 0666)
 	log.Println("NEEDS_UPDATE: true")
@@ -184,9 +192,9 @@ func handleAPIError (resp *http.Response, err error) {
 	if resp.StatusCode != 200 {
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			log.Fatalf("PaperMC API returns an ambiguous status code: %d", resp.StatusCode)
+			log.Fatalf("PaperMC API returns an ambiguous status code: %d\n", resp.StatusCode)
 		}
 
-		log.Fatalf("PaperMC API returns an ambiguous error: %s", string(body))
+		log.Fatalf("PaperMC API returns an ambiguous error: %s\n", string(body))
 	}
 }
