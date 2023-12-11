@@ -43,7 +43,7 @@ jobs:
         if: steps.fetch.outputs.NEEDS_UPDATE == 'true'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          message: 'chore(${{ env.PROJECT_NAME }}): update previous_args.json `${{ steps.fetch.outputs.DOWNLOAD_NAME }}`'
+          message: "ci: ${{ steps.fetch.outputs.IS_EXPERIMENTAL_BUILD == 'true' && '[experimental] ' || '' }}`${{ steps.fetch.outputs.DOWNLOAD_NAME }}`"
 
   build:
     name: Build image
