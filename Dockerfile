@@ -15,7 +15,7 @@ RUN chmod a+rwx /bin/start.sh /bin/server.jar
 
 FROM alpine as runner
 
-RUN apk add --no-cache openjdk17-jre
+RUN apk add --no-cache openjdk21-jre --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
 
 WORKDIR /app
 
