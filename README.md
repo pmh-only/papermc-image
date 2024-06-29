@@ -1,3 +1,7 @@
+> [!Note]
+> Oops. I missed Java version requirements... so maybe `latest` tag images are not working before next Paper release.\
+> During that time, please use `experimental` tagged images
+
 # :package: `papermc-image`
 Automatically build container images for minecraft PaperMC softwares.
 
