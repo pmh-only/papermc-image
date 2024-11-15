@@ -78,6 +78,7 @@ jobs:
             BUILD_ID=${{ needs.check.outputs.BUILD_ID }}
             DOWNLOAD_NAME=${{ needs.check.outputs.DOWNLOAD_NAME }}
           tags: |
+            ghcr.io/pmh-only/${{env.PROJECT_NAME}}:nightly
             ghcr.io/pmh-only/${{env.PROJECT_NAME}}:${{ needs.check.outputs.IS_EXPERIMENTAL_BUILD == 'false' && 'latest' || 'experimental' }}
             ghcr.io/pmh-only/${{ env.PROJECT_NAME }}:${{ needs.check.outputs.VERSION_NAME }}
             ghcr.io/pmh-only/${{ env.PROJECT_NAME }}:${{ needs.check.outputs.VERSION_NAME }}-${{ needs.check.outputs.BUILD_ID }}
