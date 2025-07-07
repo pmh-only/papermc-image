@@ -14,6 +14,11 @@ or.. velocity proxy
 docker run -itp 25565:25565 -v .:/app ghcr.io/pmh-only/velocity
 ```
 
+or try [folia](https://papermc.io/software/folia), a new multithreadding bukkit
+```sh
+docker run -itp 25565:25565 -v .:/app ghcr.io/pmh-only/folia
+```
+
 jvm memory limit:
 ```sh
 docker run -itp 25565:25565 -v .:/app ghcr.io/pmh-only/paper -Xms1G -Xmx1G
