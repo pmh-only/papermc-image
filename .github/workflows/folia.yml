@@ -1,4 +1,4 @@
-name: 'Check updates and build: Paper Bukkit'
+name: 'Check updates and build: Folia (fork of Paper Bukkit)'
 
 on:
   workflow_dispatch:
