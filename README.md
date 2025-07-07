@@ -14,7 +14,7 @@ or.. velocity proxy
 docker run -itp 25565:25565 -v .:/app ghcr.io/pmh-only/velocity
 ```
 
-or try [folia](https://papermc.io/software/folia), a new multithreadding bukkit
+or try [folia](https://papermc.io/software/folia), a new multithreading bukkit
 ```sh
 docker run -itp 25565:25565 -v .:/app ghcr.io/pmh-only/folia
 ```
