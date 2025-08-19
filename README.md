@@ -29,6 +29,11 @@ docker run -itp 25565:25565 -v .:/app ghcr.io/pmh-only/paper -Xms1G -Xmx1G
 docker run -itp 25565:25565 -e DISABLE_TUNING=true -v .:/app ghcr.io/pmh-only/paper -Xms1G -Xmx1G
 ```
 
+accept minecraft EULA automatically:
+```sh
+docker run -itp 25565:25565 -e ACCEPT_EULA=true -v .:/app ghcr.io/pmh-only/paper -Xms1G -Xmx1G
+```
+
 ## docker-compose
 ```yml
 version: '3'
@@ -41,11 +46,17 @@ services:
     user: 1000:1000
     tty: true
     stdin_open: true
+    environment:
+      - ACCEPT_EULA=true
     volumes:
       - .:/app:rw
     ports:
       - '25565:25565'
 ```
+
+## Environment Variables
+- `ACCEPT_EULA=true` - Automatically accept Minecraft EULA by creating `eula.txt` with `eula=true`
+- `DISABLE_TUNING=true` - Disable Aikar's JVM tuning flags
 
 wanna update your paper bukkits? just type:
 ```sh

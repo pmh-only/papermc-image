@@ -8,6 +8,8 @@ services:
     user: 1000:1000
     tty: true
     stdin_open: true
+    environment:
+      - ACCEPT_EULA=true
     volumes:
       - ./test:/app:rw
     ports:
