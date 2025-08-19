@@ -29,7 +29,7 @@ docker run -itp 25565:25565 -v .:/app ghcr.io/pmh-only/paper -Xms1G -Xmx1G
 docker run -itp 25565:25565 -e DISABLE_TUNING=true -v .:/app ghcr.io/pmh-only/paper -Xms1G -Xmx1G
 ```
 
-accept minecraft EULA automatically:
+Accept minecraft EULA automatically:
 ```sh
 docker run -itp 25565:25565 -e ACCEPT_EULA=true -v .:/app ghcr.io/pmh-only/paper -Xms1G -Xmx1G
 ```
