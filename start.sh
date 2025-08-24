@@ -11,4 +11,13 @@ if [[ -n "$ACCEPT_EULA" ]]; then
   echo "eula=true" > /app/eula.txt
 fi
 
+ONLINE_MODE="${ONLINE_MODE:-true}"
+PROPERTIES_FILE="/app/server.properties"
+
+if grep -q '^online-mode=' "$PROPERTIES_FILE"; then
+  sed -i "s/^online-mode=.*/online-mode=$ONLINE_MODE/" "$PROPERTIES_FILE"
+else
+  echo "online-mode=$ONLINE_MODE" >> "$PROPERTIES_FILE"
+fi
+
 java $* $TUNING_FLAG -jar /bin/server.jar

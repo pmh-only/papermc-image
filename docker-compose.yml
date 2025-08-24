@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   minecraft:
     image: ghcr.io/pmh-only/paper
@@ -10,6 +8,7 @@ services:
     stdin_open: true
     environment:
       - ACCEPT_EULA=true
+      - ONLINE_MODE=true
     volumes:
       - ./test:/app:rw
     ports:

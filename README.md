@@ -34,10 +34,13 @@ Accept minecraft EULA automatically:
 docker run -itp 25565:25565 -e ACCEPT_EULA=true -v .:/app ghcr.io/pmh-only/paper -Xms1G -Xmx1G
 ```
 
+Toggle online mode:
+```sh
+docker run -itp 25565:25565 -e ONLINE_MODE=true -v .:/app ghcr.io/pmh-only/paper -Xms1G -Xmx1G
+```
+
 ## docker-compose
 ```yml
-version: '3'
-
 services:
   minecraft:
     image: ghcr.io/pmh-only/paper
@@ -48,6 +51,7 @@ services:
     stdin_open: true
     environment:
       - ACCEPT_EULA=true
+      - ONLINE_MODE=true
     volumes:
       - .:/app:rw
     ports:
@@ -57,6 +61,7 @@ services:
 ## Environment Variables
 - `ACCEPT_EULA=true` - Automatically accept Minecraft EULA by creating `eula.txt` with `eula=true`
 - `DISABLE_TUNING=true` - Disable Aikar's JVM tuning flags
+- `ONLINE_MODE=true` - Enable online mode (default: true)
 
 wanna update your paper bukkits? just type:
 ```sh
