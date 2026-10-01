@@ -8,8 +8,9 @@ ARG PROJECT_NAME
 ARG VERSION_NAME
 ARG BUILD_ID
 ARG DOWNLOAD_NAME
+ARG DOWNLOAD_URL
 
-RUN wget https://api.papermc.io/v2/projects/${PROJECT_NAME}/versions/${VERSION_NAME}/builds/${BUILD_ID}/downloads/${DOWNLOAD_NAME} -O /bin/server.jar
+RUN wget --user-agent='papermc-image/1.0 (https://github.com/pmh-only/papermc-image)' "${DOWNLOAD_URL}" -O /bin/server.jar
 
 RUN chmod a+rwx /bin/start.sh /bin/server.jar
 

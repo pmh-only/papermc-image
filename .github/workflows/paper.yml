@@ -21,6 +21,7 @@ jobs:
       VERSION_NAME: ${{ steps.fetch.outputs.VERSION_NAME }}
       BUILD_ID: ${{ steps.fetch.outputs.BUILD_ID }}
       DOWNLOAD_NAME: ${{ steps.fetch.outputs.DOWNLOAD_NAME }}
+      DOWNLOAD_URL: ${{ steps.fetch.outputs.DOWNLOAD_URL }}
       IS_EXPERIMENTAL_BUILD: ${{ steps.fetch.outputs.IS_EXPERIMENTAL_BUILD }}
     steps:
       - uses: actions/checkout@v4
@@ -77,6 +78,7 @@ jobs:
             VERSION_NAME=${{ needs.check.outputs.VERSION_NAME }}
             BUILD_ID=${{ needs.check.outputs.BUILD_ID }}
             DOWNLOAD_NAME=${{ needs.check.outputs.DOWNLOAD_NAME }}
+            DOWNLOAD_URL=${{ needs.check.outputs.DOWNLOAD_URL }}
           tags: |
             ghcr.io/pmh-only/${{env.PROJECT_NAME}}:nightly
             ghcr.io/pmh-only/${{env.PROJECT_NAME}}:${{ needs.check.outputs.IS_EXPERIMENTAL_BUILD == 'false' && 'latest' || 'experimental' }}

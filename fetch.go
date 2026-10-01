@@ -1,18 +1,35 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"time"
 )
 
 var PROJECT_NAME string
 var VERSION_NAME string
 var BUILD_ID string
 var DOWNLOAD_NAME string
+var DOWNLOAD_URL string
+
+const userAgent = "papermc-image/1.0 (https://github.com/pmh-only/papermc-image)"
+
+var apiClient = &http.Client{Timeout: 30 * time.Second}
+
+type buildResponse struct {
+	ID        int    `json:"id"`
+	Channel   string `json:"channel"`
+	Downloads map[string]struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"downloads"`
+}
 
 var GITHUB_OUTPUT string
 var DISABLE_VERSION_UPDATE_CHECK bool
@@ -24,7 +41,7 @@ func init() {
 	log.Printf("PROJECT_NAME: %s\n", PROJECT_NAME)
 
 	if !isProjectNameProvided {
-		log.Fatalln("Required environment variable, PROJECT_NAME does not provided.")		
+		log.Fatalln("Required environment variable, PROJECT_NAME does not provided.")
 	}
 
 	github_output, isGithubOutputProvided := os.LookupEnv("GITHUB_OUTPUT")
@@ -39,80 +56,43 @@ func init() {
 func main() {
 	log.Println("Fetching VERSION_NAME list...")
 
-	url := fmt.Sprintf("https://api.papermc.io/v2/projects/%s", PROJECT_NAME)
-	resp, err := http.Get(url)
-	handleAPIError(resp, err)
-
-	var data map[string]interface{}
-	body, err := io.ReadAll(resp.Body)
+	apiURL := fmt.Sprintf("https://fill.papermc.io/v3/projects/%s", url.PathEscape(PROJECT_NAME))
+	var project struct {
+		Versions json.RawMessage `json:"versions"`
+	}
+	if err := fetchJSON(apiURL, &project); err != nil {
+		log.Fatal(err)
+	}
+	var err error
+	VERSION_NAME, err = latestVersion(project.Versions)
 	if err != nil {
-		log.Fatalln("PaperMC API returns an ambiguous data")
+		log.Fatal(err)
 	}
-
-	log.Printf("Response: %s", body)
-
-	if err := json.Unmarshal(body, &data); err != nil {
-		log.Fatalln("PaperMC API returns an ambiguous data")
-	}
-
-	versions := data["versions"].([]interface{})
-	latest_version := versions[len(versions) - 1].(string)
-
-	VERSION_NAME = latest_version
 
 	log.Printf("Fetched VERSION_NAME: %s\n", VERSION_NAME)
 	log.Println("Fetching BUILD_ID list...")
 
-	url = fmt.Sprintf("%s/versions/%s", url, VERSION_NAME)
-	resp, err = http.Get(url)
-	handleAPIError(resp, err)
-
-	body, err = io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalln("PaperMC API returns an ambiguous data")
+	var build buildResponse
+	if err := fetchJSON(fmt.Sprintf("%s/versions/%s/builds/latest", apiURL, url.PathEscape(VERSION_NAME)), &build); err != nil {
+		log.Fatal(err)
 	}
-
-	log.Printf("Response: %s", body)
-
-	if err := json.Unmarshal(body, &data); err != nil {
-		log.Fatalln("PaperMC API returns an ambiguous data")
-	}
-
-	builds := data["builds"].([]interface{})
-	latest_build_id := builds[len(builds) - 1].(float64)
-
-	BUILD_ID = fmt.Sprint(latest_build_id)
+	BUILD_ID = fmt.Sprint(build.ID)
 	log.Printf("Fetched BUILD_ID: %s\n", BUILD_ID)
 	log.Println("Fetching DOWNLOAD_NAME list...")
 
-	url = fmt.Sprintf("%s/builds/%s", url, BUILD_ID)
-	resp, err = http.Get(url)
-	handleAPIError(resp, err)
-
-	body, err = io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalln("PaperMC API returns an ambiguous data")
-	}
-
-	log.Printf("Response: %s\n", body)
-
-	if err := json.Unmarshal(body, &data); err != nil {
-		log.Fatalln("PaperMC API returns an ambiguous data")
-	}
-
-	build_channel := data["channel"].(string)
 	is_experimental_build := "false"
 
-	if build_channel == "experimental" {
+	if build.Channel != "STABLE" && build.Channel != "RECOMMENDED" {
 		log.Println("Experimental build detected")
 		is_experimental_build = "true"
 	}
 
-	downloads := data["downloads"].(map[string]interface{})
-	download_data := downloads["application"].(map[string]interface{})
-	download_name := download_data["name"].(string)
-
-	DOWNLOAD_NAME = download_name
+	download, ok := build.Downloads["server:default"]
+	if !ok || download.Name == "" || download.URL == "" {
+		log.Fatalln("PaperMC API did not provide a server:default download")
+	}
+	DOWNLOAD_NAME = download.Name
+	DOWNLOAD_URL = download.URL
 	log.Printf("Fetched DOWNLOAD_NAME: %s\n", DOWNLOAD_NAME)
 
 	if DISABLE_VERSION_UPDATE_CHECK {
@@ -121,7 +101,7 @@ func main() {
 
 	log.Println("Checking version history...")
 
-	body, err = os.ReadFile("previous_args.json")
+	body, err := os.ReadFile("previous_args.json")
 	if err != nil {
 		log.Fatalf("Version history file, previous_args.json is not readable: %s\n", err.Error())
 	}
@@ -135,7 +115,7 @@ func main() {
 	}
 
 	needs_update := false
-	
+
 	previous_data := file[PROJECT_NAME]
 	if previous_data == nil {
 		needs_update = true
@@ -159,7 +139,7 @@ func main() {
 			needs_update = true
 		}
 	}
-	
+
 	if !needs_update {
 		os.WriteFile(GITHUB_OUTPUT, []byte("NEEDS_UPDATE=false"), 0666)
 		log.Println("NEEDS_UPDATE: false")
@@ -167,12 +147,12 @@ func main() {
 	}
 
 	output_body := fmt.Sprintf(
-		"NEEDS_UPDATE=true\nVERSION_NAME=%s\nBUILD_ID=%s\nDOWNLOAD_NAME=%s\nIS_EXPERIMENTAL_BUILD=%s\n",
-		VERSION_NAME, BUILD_ID, DOWNLOAD_NAME, is_experimental_build)
+		"NEEDS_UPDATE=true\nVERSION_NAME=%s\nBUILD_ID=%s\nDOWNLOAD_NAME=%s\nDOWNLOAD_URL=%s\nIS_EXPERIMENTAL_BUILD=%s\n",
+		VERSION_NAME, BUILD_ID, DOWNLOAD_NAME, DOWNLOAD_URL, is_experimental_build)
 
 	os.WriteFile(GITHUB_OUTPUT, []byte(output_body), 0666)
 	log.Println("NEEDS_UPDATE: true")
-		
+
 	new_data := file
 	new_data[PROJECT_NAME] = map[string]string{}
 	new_data[PROJECT_NAME].(map[string]string)["VERSION_NAME"] = VERSION_NAME
@@ -184,17 +164,46 @@ func main() {
 	os.WriteFile("./previous_args.json", new_body, 0666)
 }
 
-func handleAPIError (resp *http.Response, err error) {
-	if err != nil {
-		log.Fatalf("PaperMC API call failed: %s\n", err.Error())
+// Version groups and their entries are returned newest first. Preserve their
+// JSON order rather than decoding groups into an unordered Go map.
+func latestVersion(versions json.RawMessage) (string, error) {
+	decoder := json.NewDecoder(bytes.NewReader(versions))
+	token, err := decoder.Token()
+	if err != nil || token != json.Delim('{') {
+		return "", fmt.Errorf("PaperMC API returned invalid version groups")
 	}
-
-	if resp.StatusCode != 200 {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			log.Fatalf("PaperMC API returns an ambiguous status code: %d\n", resp.StatusCode)
+	for decoder.More() {
+		if _, err := decoder.Token(); err != nil {
+			return "", err
 		}
-
-		log.Fatalf("PaperMC API returns an ambiguous error: %s\n", string(body))
+		var group []string
+		if err := decoder.Decode(&group); err != nil {
+			return "", err
+		}
+		if len(group) > 0 && group[0] != "" {
+			return group[0], nil
+		}
 	}
+	return "", fmt.Errorf("PaperMC API returned no versions")
+}
+
+func fetchJSON(apiURL string, data interface{}) error {
+	req, err := http.NewRequest(http.MethodGet, apiURL, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("User-Agent", userAgent)
+	resp, err := apiClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("PaperMC API call failed: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+		return fmt.Errorf("PaperMC API returned HTTP %d: %s", resp.StatusCode, body)
+	}
+	if err := json.NewDecoder(resp.Body).Decode(data); err != nil {
+		return fmt.Errorf("PaperMC API returned invalid JSON: %w", err)
+	}
+	return nil
 }
